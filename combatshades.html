@@ -186,111 +186,110 @@ class Fighter {
         return { x, y, w: length, h: height };
     }
 
-draw() {
-    const torsoX = this.x, torsoY = this.y, torsoW = this.torsoW, torsoH = this.torsoH;
-    ctx.fillStyle = this.color;
-    ctx.strokeStyle = this.color;
-    ctx.lineWidth = 6;
+    draw() {
+        const torsoX = this.x, torsoY = this.y, torsoW = this.torsoW, torsoH = this.torsoH;
+        ctx.fillStyle = this.color;
+        ctx.strokeStyle = this.color;
+        ctx.lineWidth = 6;
 
-    // Torso
+        // Torso
+        ctx.beginPath();
+        ctx.moveTo(torsoX + 5, torsoY);
+        ctx.lineTo(torsoX + torsoW - 5, torsoY);
+        ctx.lineTo(torsoX + torsoW, torsoY + torsoH);
+        ctx.lineTo(torsoX, torsoY + torsoH);
+        ctx.closePath();
+        ctx.fill();
+
+        // Head
+        ctx.beginPath();
+        ctx.arc(torsoX + torsoW / 2, torsoY - torsoH * 0.25, torsoW / 2, 0, Math.PI * 2);
+        ctx.fill();
+
+        const armSwing = Math.sin(this.walkCycle) * 20;
+        const legSwing = Math.sin(this.walkCycle) * 20;
+
+// Arms & legs
+if (this.isAttacking && (this.attackType === 'sideKick' || this.attackType === 'backKick')) {
+    // Calculate normalized progress (0 -> 1)
+    let progress = this.attackTimer / this.maxAttackTime;
+    if (progress > 1) progress = 1;
+
+    // Kick length
+    let kickLength = this.attackType === 'backKick' ? 80 : 70;
+    // SideKick moves twice as fast visually
+    if (this.attackType === 'sideKick') kickLength *= progress*2 < 1 ? progress*2 : 1;
+    else kickLength *= progress;
+
+    const startX = torsoX + (this.facingRight ? torsoW : 0);
+    const startY = torsoY + torsoH;
+    const endX = this.facingRight ? startX + kickLength : startX - kickLength;
+    const endY = startY - 10 * progress;
+
+    // Draw the kicking leg
     ctx.beginPath();
-    ctx.moveTo(torsoX + 5, torsoY);
-    ctx.lineTo(torsoX + torsoW - 5, torsoY);
-    ctx.lineTo(torsoX + torsoW, torsoY + torsoH);
-    ctx.lineTo(torsoX, torsoY + torsoH);
-    ctx.closePath();
-    ctx.fill();
+    ctx.moveTo(startX, startY);
+    ctx.lineTo(endX, endY);
+    ctx.stroke();
 
-    // Head
+    // stationary other leg
     ctx.beginPath();
-    ctx.arc(torsoX + torsoW / 2, torsoY - torsoH * 0.25, torsoW / 2, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Determine swing for normal walk
+    ctx.moveTo(torsoX + 5, torsoY + torsoH);
+    ctx.lineTo(torsoX - 10, torsoY + torsoH + 80);
+    ctx.stroke();
+} else {
+    // Normal arms & legs
     const armSwing = Math.sin(this.walkCycle) * 20;
     const legSwing = Math.sin(this.walkCycle) * 20;
 
-    // Kicks (sideKick & backKick)
-    if (this.isAttacking && (this.attackType === 'sideKick' || this.attackType === 'backKick')) {
-        let progress = this.attackTimer / this.maxAttackTime;
-        if (progress > 1) progress = 1;
+    // Arms
+    ctx.beginPath();
+    ctx.moveTo(torsoX + 5, torsoY + 10);
+    ctx.lineTo(torsoX - 20, torsoY + 20 + armSwing);
+    ctx.lineTo(torsoX - 40, torsoY + 30 + armSwing);
+    ctx.stroke();
 
-        // Kick length
-        let kickLength = this.attackType === 'backKick' ? 80 : 70;
+    ctx.beginPath();
+    ctx.moveTo(torsoX + torsoW - 5, torsoY + 10);
+    ctx.lineTo(torsoX + torsoW + 20, torsoY + 20 - armSwing);
+    ctx.lineTo(torsoX + torsoW + 40, torsoY + 30 - armSwing);
+    ctx.stroke();
 
-        // SideKick plays twice as fast visually
-        if (this.attackType === 'sideKick') {
-            let fastProgress = progress * 2;
-            if (fastProgress > 1) fastProgress = 1;
-            kickLength *= fastProgress;
-        } else {
-            kickLength *= progress;
-        }
+    // Legs
+    ctx.beginPath();
+    ctx.moveTo(torsoX + 5, torsoY + torsoH);
+    ctx.lineTo(torsoX - 10, torsoY + torsoH + 40 + legSwing);
+    ctx.lineTo(torsoX - 15, torsoY + torsoH + 80 + legSwing);
+    ctx.stroke();
 
-        const startX = torsoX + (this.facingRight ? torsoW : 0);
-        const startY = torsoY + torsoH;
-        const endX = this.facingRight ? startX + kickLength : startX - kickLength;
-        const endY = startY - 10 * progress;
+    ctx.beginPath();
+    ctx.moveTo(torsoX + torsoW - 5, torsoY + torsoH);
+    ctx.lineTo(torsoX + torsoW + 10, torsoY + torsoH + 40 - legSwing);
+    ctx.lineTo(torsoX + torsoW + 15, torsoY + torsoH + 80 - legSwing);
+    ctx.stroke();
+}
 
-        // Draw kicking leg
-        ctx.beginPath();
-        ctx.moveTo(startX, startY);
-        ctx.lineTo(endX, endY);
-        ctx.stroke();
 
-        // Stationary other leg
-        ctx.beginPath();
-        ctx.moveTo(torsoX + 5, torsoY + torsoH);
-        ctx.lineTo(torsoX - 10, torsoY + torsoH + 80);
-        ctx.stroke();
-    } else {
-        // Normal arms
-        ctx.beginPath();
-        ctx.moveTo(torsoX + 5, torsoY + 10);
-        ctx.lineTo(torsoX - 20, torsoY + 20 + armSwing);
-        ctx.lineTo(torsoX - 40, torsoY + 30 + armSwing);
-        ctx.stroke();
+        // Attack hitbox visualization
+        if (this.isAttacking) {
+            let hb = null;
+            if (this.attackType === 'punch') hb = this.getPunchHitbox();
+            else if (this.attackType === 'uppercut') hb = this.getUppercutHitbox();
+            else if (this.attackType === 'hook') hb = this.getHookHitbox();
+            else if (this.attackType === 'sideKick') hb = this.getSideKickHitbox();
+            else if (this.attackType === 'backKick') hb = this.getBackKickHitbox();
 
-        ctx.beginPath();
-        ctx.moveTo(torsoX + torsoW - 5, torsoY + 10);
-        ctx.lineTo(torsoX + torsoW + 20, torsoY + 20 - armSwing);
-        ctx.lineTo(torsoX + torsoW + 40, torsoY + 30 - armSwing);
-        ctx.stroke();
-
-        // Normal legs
-        ctx.beginPath();
-        ctx.moveTo(torsoX + 5, torsoY + torsoH);
-        ctx.lineTo(torsoX - 10, torsoY + torsoH + 40 + legSwing);
-        ctx.lineTo(torsoX - 15, torsoY + torsoH + 80 + legSwing);
-        ctx.stroke();
-
-        ctx.beginPath();
-        ctx.moveTo(torsoX + torsoW - 5, torsoY + torsoH);
-        ctx.lineTo(torsoX + torsoW + 10, torsoY + torsoH + 40 - legSwing);
-        ctx.lineTo(torsoX + torsoW + 15, torsoY + torsoH + 80 - legSwing);
-        ctx.stroke();
-    }
-
-    // Attack hitbox visualization
-    if (this.isAttacking) {
-        let hb = null;
-        if (this.attackType === 'punch') hb = this.getPunchHitbox();
-        else if (this.attackType === 'uppercut') hb = this.getUppercutHitbox();
-        else if (this.attackType === 'hook') hb = this.getHookHitbox();
-        else if (this.attackType === 'sideKick') hb = this.getSideKickHitbox();
-        else if (this.attackType === 'backKick') hb = this.getBackKickHitbox();
-
-        if (hb) {
-            ctx.fillStyle =
-                this.attackType === 'punch' ? 'rgba(255,0,0,0.7)' :
-                this.attackType === 'uppercut' ? 'rgba(255,165,0,0.7)' :
-                this.attackType === 'hook' ? 'rgba(0,255,255,0.7)' :
-                'rgba(0,200,255,0.7)';
-            ctx.fillRect(hb.x, hb.y, hb.w, hb.h);
+            if (hb) {
+                ctx.fillStyle =
+                    this.attackType === 'punch' ? 'rgba(255,0,0,0.7)' :
+                    this.attackType === 'uppercut' ? 'rgba(255,165,0,0.7)' :
+                    this.attackType === 'hook' ? 'rgba(0,255,255,0.7)' :
+                    'rgba(0,200,255,0.7)';
+                ctx.fillRect(hb.x, hb.y, hb.w, hb.h);
+            }
         }
     }
 }
-
 
 // Player & AI
 const player=new Fighter(150,FLOOR_Y-150,'black');
