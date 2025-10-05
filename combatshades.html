@@ -209,24 +209,19 @@ class Fighter {
         const armSwing = Math.sin(this.walkCycle) * 20;
         const legSwing = Math.sin(this.walkCycle) * 20;
 
-// Arms & legs
+        // Arms & legs
 if (this.isAttacking && (this.attackType === 'sideKick' || this.attackType === 'backKick')) {
-    // Calculate normalized progress (0 -> 1)
     let progress = this.attackTimer / this.maxAttackTime;
-    if (progress > 1) progress = 1;
-
-    // Kick length
-    let kickLength = this.attackType === 'backKick' ? 80 : 70;
-    // SideKick moves twice as fast visually
-    if (this.attackType === 'sideKick') kickLength *= progress*2 < 1 ? progress*2 : 1;
-    else kickLength *= progress;
-
+    
+    if (this.attackType === 'sideKick') progress *= 2; // twice as fast
+    if (progress > 1) progress = 1; // clamp
+    
+    const kickLength = this.attackType === 'sideKick' ? 70 : 80;
     const startX = torsoX + (this.facingRight ? torsoW : 0);
     const startY = torsoY + torsoH;
-    const endX = this.facingRight ? startX + kickLength : startX - kickLength;
+    const endX = startX + (this.facingRight ? kickLength * progress : -kickLength * progress);
     const endY = startY - 10 * progress;
 
-    // Draw the kicking leg
     ctx.beginPath();
     ctx.moveTo(startX, startY);
     ctx.lineTo(endX, endY);
@@ -238,37 +233,32 @@ if (this.isAttacking && (this.attackType === 'sideKick' || this.attackType === '
     ctx.lineTo(torsoX - 10, torsoY + torsoH + 80);
     ctx.stroke();
 } else {
-    // Normal arms & legs
-    const armSwing = Math.sin(this.walkCycle) * 20;
-    const legSwing = Math.sin(this.walkCycle) * 20;
+            // Normal arms
+            ctx.beginPath();
+            ctx.moveTo(torsoX + 5, torsoY + 10);
+            ctx.lineTo(torsoX - 20, torsoY + 20 + armSwing);
+            ctx.lineTo(torsoX - 40, torsoY + 30 + armSwing);
+            ctx.stroke();
 
-    // Arms
-    ctx.beginPath();
-    ctx.moveTo(torsoX + 5, torsoY + 10);
-    ctx.lineTo(torsoX - 20, torsoY + 20 + armSwing);
-    ctx.lineTo(torsoX - 40, torsoY + 30 + armSwing);
-    ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(torsoX + torsoW - 5, torsoY + 10);
+            ctx.lineTo(torsoX + torsoW + 20, torsoY + 20 - armSwing);
+            ctx.lineTo(torsoX + torsoW + 40, torsoY + 30 - armSwing);
+            ctx.stroke();
 
-    ctx.beginPath();
-    ctx.moveTo(torsoX + torsoW - 5, torsoY + 10);
-    ctx.lineTo(torsoX + torsoW + 20, torsoY + 20 - armSwing);
-    ctx.lineTo(torsoX + torsoW + 40, torsoY + 30 - armSwing);
-    ctx.stroke();
+            // Legs
+            ctx.beginPath();
+            ctx.moveTo(torsoX + 5, torsoY + torsoH);
+            ctx.lineTo(torsoX - 10, torsoY + torsoH + 40 + legSwing);
+            ctx.lineTo(torsoX - 15, torsoY + torsoH + 80 + legSwing);
+            ctx.stroke();
 
-    // Legs
-    ctx.beginPath();
-    ctx.moveTo(torsoX + 5, torsoY + torsoH);
-    ctx.lineTo(torsoX - 10, torsoY + torsoH + 40 + legSwing);
-    ctx.lineTo(torsoX - 15, torsoY + torsoH + 80 + legSwing);
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.moveTo(torsoX + torsoW - 5, torsoY + torsoH);
-    ctx.lineTo(torsoX + torsoW + 10, torsoY + torsoH + 40 - legSwing);
-    ctx.lineTo(torsoX + torsoW + 15, torsoY + torsoH + 80 - legSwing);
-    ctx.stroke();
-}
-
+            ctx.beginPath();
+            ctx.moveTo(torsoX + torsoW - 5, torsoY + torsoH);
+            ctx.lineTo(torsoX + torsoW + 10, torsoY + torsoH + 40 - legSwing);
+            ctx.lineTo(torsoX + torsoW + 15, torsoY + torsoH + 80 - legSwing);
+            ctx.stroke();
+        }
 
         // Attack hitbox visualization
         if (this.isAttacking) {
