@@ -181,7 +181,7 @@ class Fighter {
 
     getBackKickHitbox() {
         if (!this.isAttacking || this.attackType !== 'backKick') return null;
-        const length = 80, height = 12;
+        const length = 120, height = 12;
         const x = this.facingRight ? this.x + this.torsoW : this.x - length;
         const y = this.y + this.torsoH / 2 - height / 2;
         return { x, y, w: length, h: height };
@@ -217,7 +217,7 @@ if (this.isAttacking && (this.attackType === 'sideKick' || this.attackType === '
     if (this.attackType === 'sideKick') progress *= 2; // twice as fast
     if (progress > 1) progress = 1; // clamp
     
-    const kickLength = this.attackType === 'sideKick' ? 70 : 80;
+    const kickLength = this.attackType === 'sideKick' ? 70 : 120;
     const startX = torsoX + (this.facingRight ? torsoW : 0);
     const startY = torsoY + torsoH;
     const endX = startX + (this.facingRight ? kickLength * progress : -kickLength * progress);
@@ -271,13 +271,16 @@ if (this.isAttacking && (this.attackType === 'sideKick' || this.attackType === '
             else if (this.attackType === 'backKick') hb = this.getBackKickHitbox();
 
             if (hb) {
-                ctx.fillStyle =
-                    this.attackType === 'punch' ? 'rgba(255,0,0,0.7)' :
-                    this.attackType === 'uppercut' ? 'rgba(255,165,0,0.7)' :
-                    this.attackType === 'hook' ? 'rgba(0,255,255,0.7)' :
-                    'rgba(0,200,255,0.7)';
-                ctx.fillRect(hb.x, hb.y, hb.w, hb.h);
-            }
+    ctx.fillStyle =
+        this.attackType === 'punch' ? 'rgba(255,0,0,0.7)' :           // red
+        this.attackType === 'uppercut' ? 'rgba(255,165,0,0.7)' :      // orange
+        this.attackType === 'hook' ? 'rgba(0,255,255,0.7)' :          // cyan
+        this.attackType === 'sideKick' ? 'rgba(0,255,0,0.7)' :        // 🟩 green
+        this.attackType === 'backKick' ? 'rgba(0,200,255,0.7)' :      // blue-ish
+        'rgba(255,255,255,0.7)'; // fallback
+    ctx.fillRect(hb.x, hb.y, hb.w, hb.h);
+}
+
         }
     }
 }
