@@ -19,5 +19,8 @@ Controls: W (Jump), A (Move Left), D (Move Right), 1 (Straight Punch), 2 (Upperc
 WARNING: DO NOT EDIT THE CODE OR COPY IN THE ATTEMPT OF PROFITING.
 THE GAME'S SOURCE CODE MUST NOT BE EDITED OR MISUSED. DO NOT
 MESS UP THE GAME WITH THIRD PARTY SOFTWARES.
-// --- COMBAT: SHADES --- \\\
 ---
+
+- Model Versions/Updates -
+  Combat: Shades (PUBLIC BETA)
+  
